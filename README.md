@@ -1,9 +1,10 @@
 # 🚀 Mashtronics Business Enterprise Website
 
-[![Website](https://img.shields.io/badge/Live-Website-blue)](https://mashtronicsbe.co.za/))
+[![Website](https://img.shields.io/badge/Live-Website-blue)](https://mashtronicsbe.co.za/)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![PHP](https://img.shields.io/badge/PHP-777BB4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
@@ -34,14 +35,15 @@
 
 ## 🛠️ Technical Stack
 
-### Frontend
+### Languages
 - **HTML5** – Semantic markup  
 - **CSS3** – Flexbox/Grid layouts and custom styles  
 - **JavaScript** – Vanilla JS interactivity  
-- **Font Awesome** – Icon library  
-- **Google Fonts** – Poppins & Montserrat  
+- **PHP** – Server-side scripting for dynamic content  
 
 ### Libraries & Plugins
+- **Font Awesome** – Icon library  
+- **Google Fonts** – Poppins & Montserrat  
 - **AOS (Animate On Scroll)** – Scroll animations  
 - **Animate.css** – CSS animations  
 - **FormSubmit** – Form handling service  
