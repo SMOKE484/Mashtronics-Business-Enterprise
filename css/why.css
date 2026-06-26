@@ -1,17 +1,4 @@
 /* Why Choose Us Page Styles */
-/* Updated Color Scheme to match main.css */
-:root {
-  --primary: #009688;
-  --primary-dark: #00796b;
-  --primary-light: #b2dfdb;
-  --secondary: #ff5722;
-  --accent: #ffc107;
-  --dark: #263238;
-  --light: #eceff1;
-  --white: #ffffff;
-  --gray: #90a4ae;
-  --gray-light: #cfd8dc;
-}
 
 /* Base Styles */
 .why-choose-us {
@@ -317,37 +304,14 @@
 .why-cta h2 {
   font-size: 2.5rem;
   margin-bottom: 20px;
+  color: var(--white);
 }
 
 .why-cta p {
   font-size: 1.2rem;
   max-width: 700px;
   margin: 0 auto 30px;
-}
-
-.btn {
-  display: inline-block;
-  padding: 15px 30px;
-  background: var(--white);
-  color: var(--primary);
-  border-radius: 50px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.btn--primary {
-  background: var(--secondary);
   color: var(--white);
-}
-
-.btn--primary:hover {
-  background: #e64a19;
 }
 
 /* Responsive Styles */

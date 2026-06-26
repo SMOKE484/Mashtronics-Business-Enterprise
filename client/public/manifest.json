@@ -1,0 +1,16 @@
+{
+  "name": "Mashtronics Business Enterprise",
+  "short_name": "Mashtronics",
+  "description": "Professional CCTV installation, access control systems, and comprehensive IT security solutions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1F4E78",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

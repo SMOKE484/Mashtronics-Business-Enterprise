@@ -177,13 +177,13 @@ ul {
   left: 0;
   width: 100%;
   z-index: 1000;
-  background-color: var(--white);
+  background-color: rgba(255, 255, 255, 0.85);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal);
 }
 
 .header.scrolled {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.75);
   box-shadow: var(--shadow-md);
 }
 

@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <link rel="stylesheet" href="style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Gupter:wght@400;500;700&display=swap" rel="stylesheet">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Join Mashtronics Business Enterprise, the leading provider of security services and technology solutions since 2015. Explore career opportunities in security, fibre installation, and access control.">
+        <meta name="keywords" content="Careers at Mashtronics, security jobs, fibre installation technician, access control specialist, Gauteng jobs, security guard jobs, technology solutions, client satisfaction, job openings">
+        <meta name="author" content="Mashtronics Business Enterprise">
+        <meta name="robots" content="index, follow">
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        
+        <!-- Open Graph Meta Tags for Careers -->
+        <meta property="og:title" content="Join Our Team at Mashtronics Business Enterprise">
+        <meta property="og:description" content="Discover rewarding career opportunities in security, fibre installation, and access control. Be part of a professional team dedicated to client satisfaction and safety.">
+        <meta property="og:image" content="https://mashtronicsbe.co.za/images/careers-banner.jpg">
+        <meta property="og:url" content="https://mashtronicsbe.co.za/careers.html">
+        <meta property="og:type" content="website">
+    
+        <!-- Canonical URL -->
+        <link rel="canonical" href="https://mashtronicsbe.co.za/careers.html">
+    
+        <title>Careers at Mashtronics Business Enterprise</title>
+    </head>
+    
+<body>
+   
+    <section id="bannerCareer">
+        <a href="index.html"><img src="images/Logo.jpg (1) (1).png" class="logo" loading="lazy"></a>
+
+        <header>
+            <div class="container" data-aos="fade-right" data-aos-duration="1700" data-aos-delay="200">
+                <h1>Careers at Mashtronics Business <span class="enterprise">Enterprise</span></h1>
+                <p>Join a team of professionals dedicated to providing exceptional security and technology solutions since 2015.</p>
+            </div>
+        </header>
+        
+        <div id="sideNav">
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#about">About Us</a></li>
+                    <li><a href="WhyChooseUs.html">Why Choose Us</a></li>
+                    <li><a href="index.html#Services">Services</a></li>
+                    <li><a href="index.html#container2">Clients</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                    <li><a href="index.html#section-wraper">Contact Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    
+        <div id="menuBtn">
+            <img src="images/menu_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.png" id="menu" alt="Menu Button">
+        </div>
+
+        <div class="container" data-aos="fade-left" data-aos-duration="1700" data-aos-delay="400">
+            <h2>Current Job Openings</h2>
+            <p>Explore our latest career opportunities and become part of our team dedicated to client satisfaction and safety.</p>
+
+            <ul class="job-list">
+                <li>
+                    <h3>Senior Technician</h3>
+                    <p>Senior Tech will be responsible for installation, configuration, commissioning and maintenance of CCTV, Access Control systems including Biometrics and networks systems</p>
+                    <p><strong>Location:</strong> Gauteng</p>
+                    <p><strong>Requirements:</strong> Matric, Driver's license, Any networking certificate, Molex Certificate (networking)  or any other network related qualifications, Certificate in any CCTV and Access control, At least 5 years experience</p>
+                    <button onclick="openForm()">Apply Now</button>
+                </li>
+               
+            </ul>
+        </div>
+    </section>
+
+   
+
+    <style>
+        #applicationModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+            font-family: 'Poppins', sans-serif;
+        }
+    
+        #applicationModal h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+    
+        #applicationModal form label {
+            font-weight: 500;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+        }
+    
+        #applicationModal form input,
+        #applicationModal form textarea,
+        #applicationModal form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+    
+        #applicationModal form input:focus,
+        #applicationModal form textarea:focus {
+            border-color: #009688;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+    
+        #applicationModal form textarea {
+            resize: none;
+            height: 100px;
+        }
+    
+        #applicationModal form button {
+            background-color: #0ac438;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        #applicationModal form button:hover {
+            background-color: #009688;
+        }
+    
+        #applicationModal form button:active {
+            transform: scale(0.98);
+        }
+    
+        #applicationModal form input[type="file"] {
+            padding: 5px;
+            border: none;
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+    
+        #applicationModal form input[type="file"]::-webkit-file-upload-button {
+            padding: 10px;
+            background-color: #0ac438;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        #applicationModal form input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #009688;
+        }
+    </style>
+    
+    <div id="applicationModal">
+        <!-- Modal Content -->
+        <h3>Apply</h3>
+        <form 
+            method="POST" 
+            action="https://formsubmit.co/walter@mashtronicsbe.co.za" 
+            enctype="multipart/form-data">
+            <input type="hidden" name="_subject" value="APPLICATION FOR ADVERTISED JOB POST">
+    
+            <label for="name">Full Names:</label>
+            <input type="text" id="name" name="Name(s)" placeholder="Your Name" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="Email" placeholder="Your Email" required>
+            
+            <label for="resume">Upload CV:</label>
+            <input type="file" id="resume" name="cv" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required>
+
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
+            
+            <button type="submit">Submit Application</button>
+            <button type="button" onclick="closeForm()">Cancel</button>
+        </form>
+    </div>
+    
+    <script>
+        function closeForm() {
+            document.getElementById('applicationModal').style.display = 'none';
+        }
+    </script>
+    
+    <script>
+                // Function to Show the Modal
+        function openForm() {
+            document.getElementById('applicationModal').style.display = 'block';
+        }
+
+        // Function to Hide the Modal
+        function closeForm() {
+            document.getElementById('applicationModal').style.display = 'none';
+        }
+
+    </script>
+
+
+    <footer>
+        <div class="legal-notice">
+            <p>&copy; 2025 Mashtronics Business Enterprise. All Rights Reserved.</p>
+            <p>
+                This website and its contents are provided for informational purposes only. 
+                While every effort is made to ensure accuracy, we cannot guarantee it. 
+                Use of this site is subject to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            </p>
+        </div>
+        <div class="site-credits">
+            <p>Website designed and developed by <a href="#" target="_blank">Nalokie Holdings</a>.</p>
+        </div>
+    </footer>
+
+    <script>
+        var menuBtn = document.getElementById("menuBtn");
+        var sideNav = document.getElementById("sideNav");
+        var menu = document.getElementById("menu");
+        sideNav.style.right = "-250px";
+        menuBtn.onclick = function() {
+            if (sideNav.style.right == "-250px") {
+                sideNav.style.right = "0";
+                menu.src = "close_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.png";
+            } else {
+                sideNav.style.right = "-250px";
+                menu.src = "menu_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.png";
+            }
+        };
+
+        // Handle logo size change on scroll
+        window.addEventListener('scroll', function() {
+            var scrollY = window.scrollY;
+            var logo = document.querySelector('.logo');
+            var scale = Math.max(0.5, 1 - scrollY / 1000); // Adjust the denominator as needed for desired effect
+            logo.style.transform = 'scale(' + scale + ')';
+        });
+    </script>
+    </script>
+         <script src="https://unpkg.com/aos@next/dist/aos.js">
+    </script>
+    <script>
+       AOS.init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+/* ── Overlay (screen) ─────────────────────────────── */
+.qp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #d0d0d0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  gap: 1rem;
+}
+
+/* ── Toolbar ──────────────────────────────────────── */
+.qp-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.qp-btn-close,
+.qp-btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qp-btn-close {
+  background: #fff;
+  color: #333;
+  border: 1px solid #bbb;
+}
+
+.qp-btn-close:hover { background: #f0f0f0; }
+
+.qp-btn-print {
+  background: var(--primary, #1F4E78);
+  color: #fff;
+  margin-left: auto;
+}
+
+.qp-btn-print:hover { opacity: 0.9; }
+
+/* ── A4 document card ─────────────────────────────── */
+.qp-page {
+  width: 100%;
+  max-width: 800px;
+  background: #fff;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  font-family: Arial, sans-serif;
+  font-size: 0.8rem;
+  color: #111;
+  line-height: 1.4;
+}
+
+/* ── Header ───────────────────────────────────────── */
+.qp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border: 1px solid #333;
+  padding: 0.75rem;
+}
+
+.qp-header__logo img {
+  height: 70px;
+  width: auto;
+}
+
+.qp-header__details {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.qp-header__details strong {
+  font-size: 0.85rem;
+}
+
+/* ── Title ────────────────────────────────────────── */
+.qp-title {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 1rem 0 0.4rem;
+  text-decoration: underline;
+}
+
+.qp-scope {
+  font-size: 0.78rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #333;
+  padding: 0.35rem 0.6rem;
+}
+
+/* ── Client info table ────────────────────────────── */
+.qp-client-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  border: 1px solid #333;
+}
+
+.qp-client-table td {
+  padding: 3px 6px;
+  vertical-align: top;
+}
+
+.qp-client-label {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Line items table ─────────────────────────────── */
+.qp-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+.qp-items-table th,
+.qp-items-table td {
+  border: 1px solid #333;
+}
+
+.qp-items-head {
+  background: #f0f0f0;
+}
+
+.qp-th {
+  padding: 5px 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.qp-td {
+  padding: 4px 6px;
+  font-size: 0.78rem;
+  height: 26px;
+}
+
+.qp-col-no    { width: 60px;  text-align: center; }
+.qp-col-desc  { }
+.qp-col-qty   { width: 38px;  text-align: center; }
+.qp-col-unit  { width: 52px;  text-align: center; }
+.qp-col-price { width: 112px; text-align: right; }
+.qp-col-disc  { width: 52px;  text-align: center; }
+.qp-col-total { width: 112px; text-align: right; }
+
+.qp-items-row td { vertical-align: top; }
+
+/* ── Footer ───────────────────────────────────────── */
+.qp-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border: 1px solid #333;
+  border-top: none;
+}
+
+.qp-footer__bank,
+.qp-footer__notes {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.75rem;
+  border-right: 1px solid #333;
+  line-height: 1.6;
+}
+
+.qp-footer__totals {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.78rem;
+}
+
+.qp-footer__label {
+  font-weight: 700;
+  text-decoration: underline;
+  margin-bottom: 0.2rem;
+}
+
+.qp-totals-row {
+  display: grid;
+  grid-template-columns: 1fr 14px 90px;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 0.78rem;
+}
+
+.qp-totals-row span:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+.qp-totals-grand {
+  border-top: 1px solid #333;
+  margin-top: 4px;
+  padding-top: 4px;
+  font-weight: 700;
+}
+
+/* ── Acceptance ───────────────────────────────────── */
+.qp-acceptance {
+  margin-top: 1.5rem;
+  font-size: 0.78rem;
+}
+
+.qp-acceptance__title {
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+}
+
+.qp-acceptance__row {
+  display: flex;
+  gap: 3rem;
+}
+
+.qp-acceptance__field {
+  flex: 1;
+}
+
+.qp-acceptance__line {
+  border-bottom: 1px solid #333;
+  margin-bottom: 0.3rem;
+  height: 24px;
+}
+
+.qp-acceptance__label {
+  font-weight: 700;
+}
+
+/* ── Page number ──────────────────────────────────── */
+.qp-pagenum {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #666;
+  margin-top: 1.5rem;
+}
+
+/* ── Print styles ─────────────────────────────────── */
+@media print {
+  @page { size: A4; margin: 1.5cm; }
+
+  .qp-overlay {
+    position: static;
+    background: white;
+    padding: 0;
+    display: block;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .qp-page {
+    box-shadow: none;
+    max-width: none;
+    padding: 0;
+    width: 100%;
+  }
+}
