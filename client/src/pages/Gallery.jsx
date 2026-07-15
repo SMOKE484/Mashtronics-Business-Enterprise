@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 import kamoInstalling from '../assets/images/kamoInstalling.jpeg';
 import povhiDrilling from '../assets/images/povhiDrilling.jpeg';
 import mashambaPrimary from '../assets/images/mashambaPrimaryInstallation.jpeg';
@@ -52,6 +53,11 @@ export default function Gallery() {
 
   return (
     <>
+      <Seo
+        title="Project Gallery | Mashtronics CCTV & Security Installations"
+        description="Browse completed CCTV, access control, and electric fencing installations from Mashtronics across South Africa, with client feedback on the finished work."
+        path="/gallery"
+      />
       {/* Hero */}
       <section className="gallery-hero">
         <div className="container">

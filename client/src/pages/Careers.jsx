@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import Seo from '../components/Seo';
 import './Careers.css';
 
 const JOBS = [
@@ -37,6 +38,11 @@ export default function Careers() {
 
   return (
     <>
+      <Seo
+        title="Careers at Mashtronics | Join Our Security & IT Team"
+        description="Explore current job openings at Mashtronics Business Enterprise and join a team delivering CCTV, access control, and IT security solutions since 2015."
+        path="/careers"
+      />
       {/* Hero */}
       <section className="careers-hero">
         <div className="container">

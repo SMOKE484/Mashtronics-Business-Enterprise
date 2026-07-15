@@ -13,6 +13,7 @@ import svcFire from '../assets/images/services/fire-detection.png';
 import svcAlarms from '../assets/images/services/alarms.png';
 import svcControl from '../assets/images/services/control-rooms.png';
 import svcIntercom from '../assets/images/services/intercom.png';
+import Seo from '../components/Seo';
 import aboutUsImg from '../assets/images/aboutUs.png';
 import whyImg from '../assets/images/newWhyUs.png';
 import nttLogo from '../assets/images/NTTDATA.jpg';
@@ -226,6 +227,11 @@ export default function Home() {
 
   return (
     <div id="home-page" ref={pageRef}>
+      <Seo
+        title="Mashtronics | CCTV, Access Control & IT Security in Roodepoort"
+        description="Professional CCTV installation, access control systems, electric fencing, and IT security solutions in Roodepoort and Gauteng. Trusted since 2015 with 400+ successful projects."
+        path="/"
+      />
 
       {/* 001 — Hero */}
       <section id="hero">

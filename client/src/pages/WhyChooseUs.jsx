@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 import comprehensiveImg from '../assets/images/COMPREHENSIVE.jpg';
 import innovativeImg from '../assets/images/INNOVATIVE.jpg';
 import tailorMadeImg from '../assets/images/TailorMade.jpg';
@@ -55,6 +56,11 @@ export default function WhyChooseUs() {
 
   return (
     <>
+      <Seo
+        title="Why Choose Mashtronics | 10+ Years in Digital Security"
+        description="10+ years of experience, certified technicians, and 400+ completed projects. See why businesses across Gauteng trust Mashtronics for CCTV and access control."
+        path="/why-choose-us"
+      />
       {/* Hero */}
       <section className="why-hero">
         <div className="container">
