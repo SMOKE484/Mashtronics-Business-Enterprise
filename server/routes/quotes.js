@@ -3,6 +3,7 @@ const express         = require('express');
 const Package         = require('../models/Package');
 const Quote           = require('../models/Quote');
 const Counter         = require('../models/Counter');
+const Client          = require('../models/Client');
 const { requireAuth } = require('../middleware/auth');
 const {
   calcPackage,
@@ -10,6 +11,11 @@ const {
   calcCorporate,
   calcTravel,
 } = require('../services/pricing');
+const {
+  calcLine,
+  calcSection,
+  calcManualQuote,
+} = require('../services/quoteCalc');
 
 const router = express.Router();
 
@@ -260,6 +266,8 @@ router.post('/', async (req, res) => {
       installation: pricing.installation,
       vatAmount:    pricing.vatAmount,
       total:        pricing.total,
+      status:       'sent',
+      sentDate:     new Date(),
       ...travelData,
     });
 
@@ -275,7 +283,8 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const quotes = await Quote.find()
       .sort({ createdAt: -1 })
-      .populate('packageRef', 'name priceInclVAT');
+      .populate('packageRef', 'name priceInclVAT')
+      .populate('clientRef', 'name');
     res.json(quotes);
   } catch {
     res.status(500).json({ error: 'Server error' });
@@ -285,7 +294,7 @@ router.get('/', requireAuth, async (req, res) => {
 // ── GET /api/quotes/:id — admin only ─────────────────────────────────────────
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const quote = await Quote.findById(req.params.id).populate('packageRef');
+    const quote = await Quote.findById(req.params.id).populate('packageRef').populate('clientRef', 'name');
     if (!quote) return res.status(404).json({ error: 'Not found' });
     res.json(quote);
   } catch {
@@ -294,13 +303,17 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // ── PATCH /api/quotes/:id/status — admin only ─────────────────────────────────
+const QUOTE_STATUSES = ['draft', 'sent', 'follow_up_due', 'won', 'lost'];
 router.patch('/:id/status', requireAuth, async (req, res) => {
-  const { leadStatus } = req.body;
-  if (!['new', 'contacted', 'converted'].includes(leadStatus)) {
-    return res.status(400).json({ error: 'Invalid leadStatus' });
+  const { status, followUpDate } = req.body;
+  if (!QUOTE_STATUSES.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
   }
   try {
-    const quote = await Quote.findByIdAndUpdate(req.params.id, { leadStatus }, { new: true });
+    const update = { status };
+    if (status === 'sent') update.sentDate = new Date();
+    if (followUpDate !== undefined) update.followUpDate = followUpDate || null;
+    const quote = await Quote.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!quote) return res.status(404).json({ error: 'Not found' });
     res.json(quote);
   } catch {
@@ -308,4 +321,222 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
   }
 });
 
+// ── admin helpers ────────────────────────────────────────────────────────────
+
+/**
+ * Prices an auto-mode (residential/corporate) MBMS quote. Independent from the
+ * public POST / handler above by design — that handler must stay untouched so
+ * the public lead-capture flow can never regress.
+ */
+async function priceAutoAdmin({ type, packageId, items, travelData }) {
+  const savedItems = [];
+  let packageRef, pricing;
+
+  if (type === 'residential') {
+    let pkgPricing = null, itemsPricing = null;
+    if (packageId) {
+      const pkg = await Package.findById(packageId);
+      if (!pkg || !pkg.active) return { error: { status: 404, message: 'Package not found' } };
+      pkgPricing = calcPackage(pkg.priceInclVAT);
+      packageRef = pkg._id;
+      savedItems.push({ description: pkg.name, qty: 1, unitPrice: pkg.priceInclVAT, lineTotal: pkg.priceInclVAT });
+    }
+    const validItems = (items || []).filter(i => i.supplierCost > 0);
+    if (validItems.length > 0) {
+      const { calculated, agg } = aggregateItems(validItems, calcCustomResidential);
+      itemsPricing = agg;
+      calculated.forEach(item => savedItems.push({
+        description: item.description || 'Item', qty: item.qty || 1, supplierCost: item.supplierCost,
+        unitPrice: item.markedUp, lineTotal: item.total,
+      }));
+    }
+    if (!pkgPricing && !itemsPricing) return { error: { status: 400, message: 'Select a package or add at least one item' } };
+    const subtotal = r2((pkgPricing ? pkgPricing.exclVAT : 0) + (itemsPricing ? itemsPricing.subtotal : 0) + travelData.travelSubtotal);
+    const vatAmount = r2((pkgPricing ? pkgPricing.vatAmount : 0) + (itemsPricing ? itemsPricing.vatAmount : 0) + travelData.travelVAT);
+    const total = r2((pkgPricing ? pkgPricing.total : 0) + (itemsPricing ? itemsPricing.total : 0) + travelData.travelTotal);
+    const installation = r2(itemsPricing ? itemsPricing.installation : 0);
+    pricing = { subtotal, vatAmount, total, installation };
+  } else if (type === 'corporate') {
+    const validItems = (items || []).filter(i => i.supplierCost > 0);
+    if (validItems.length === 0) return { error: { status: 400, message: 'Add at least one item' } };
+    const { calculated, agg } = aggregateItems(validItems, calcCorporate);
+    calculated.forEach(item => savedItems.push({
+      description: item.description || 'Item', qty: item.qty || 1, supplierCost: item.supplierCost,
+      unitPrice: item.markedUp, lineTotal: item.total,
+    }));
+    const subtotal = r2(agg.subtotal + travelData.travelSubtotal);
+    const vatAmount = r2(agg.vatAmount + travelData.travelVAT);
+    const total = r2(agg.total + travelData.travelTotal);
+    pricing = { subtotal, vatAmount, total, installation: agg.installation };
+  } else {
+    return { error: { status: 400, message: 'type must be residential or corporate for auto mode' } };
+  }
+
+  return { packageRef, savedItems, pricing };
+}
+
+function priceManual(sections) {
+  const computedSections = (sections || []).map(sec => {
+    const computedItems = (sec.items || []).map(item => ({ ...item, lineTotal: calcLine(item).lineTotal }));
+    return { title: sec.title || 'Section', items: computedItems, subtotal: calcSection(computedItems).subtotal };
+  });
+  const { subtotal, vatAmount, total } = calcManualQuote(computedSections);
+  return { computedSections, subtotal, vatAmount, total };
+}
+
+async function resolveCustomer({ clientRef, customerName, customerPhone, customerEmail }) {
+  let client = null;
+  if (clientRef) {
+    client = await Client.findById(clientRef);
+    if (!client) return { error: { status: 404, message: 'Client not found' } };
+  }
+  const finalName  = customerName  || (client && client.name) || '';
+  const finalPhone = customerPhone || (client && client.contactPhone) || '';
+  if (!finalName) return { error: { status: 400, message: 'clientRef or customerName required' } };
+  return {
+    customerName: finalName,
+    customerPhone: finalPhone,
+    customerEmail: customerEmail || (client && client.contactEmail) || undefined,
+  };
+}
+
+// ── POST /api/quotes/admin — admin only, both auto and manual mode ───────────
+router.post('/admin', requireAuth, async (req, res) => {
+  const {
+    mode, clientRef, customerName, customerPhone, customerEmail,
+    site, scopeOfWork, quoteDate, validUntil, preparedBy, status, followUpDate,
+    type, packageId, items, travel, sections,
+  } = req.body;
+
+  try {
+    const customer = await resolveCustomer({ clientRef, customerName, customerPhone, customerEmail });
+    if (customer.error) return res.status(customer.error.status).json({ error: customer.error.message });
+
+    const counter = await Counter.findOneAndUpdate(
+      { name: 'quoteNumber' },
+      { $inc: { seq: 1 } },
+      { returnDocument: 'after', upsert: true }
+    );
+    const quoteNumber = `Q${counter.seq}`;
+
+    const baseFields = {
+      quoteNumber,
+      clientRef: clientRef || undefined,
+      customerName: customer.customerName,
+      customerPhone: customer.customerPhone,
+      customerEmail: customer.customerEmail,
+      site: site || '', scopeOfWork: scopeOfWork || '',
+      quoteDate: quoteDate || new Date(), validUntil: validUntil || undefined, preparedBy: preparedBy || '',
+      status: status === 'sent' ? 'sent' : 'draft',
+      sentDate: status === 'sent' ? new Date() : undefined,
+      followUpDate: followUpDate || undefined,
+    };
+
+    if (mode === 'manual') {
+      if (!Array.isArray(sections) || sections.length === 0) {
+        return res.status(400).json({ error: 'At least one section is required' });
+      }
+      const { computedSections, subtotal, vatAmount, total } = priceManual(sections);
+      const quote = await Quote.create({
+        ...baseFields, mode: 'manual', sections: computedSections,
+        subtotal, vatAmount, total, installation: 0,
+      });
+      return res.status(201).json(quote);
+    }
+
+    // ── auto mode ────────────────────────────────────────────────────────────
+    let travelData = { travelKm: undefined, travelRatePerKm: undefined, travelSubtotal: 0, travelVAT: 0, travelTotal: 0 };
+    if (travel && travel.km > 0 && travel.ratePerKm > 0) {
+      const tb = calcTravel(Number(travel.km), Number(travel.ratePerKm));
+      travelData = { travelKm: tb.km, travelRatePerKm: tb.ratePerKm, travelSubtotal: tb.travelExcl, travelVAT: tb.travelVAT, travelTotal: tb.travelTotal };
+    }
+    const result = await priceAutoAdmin({ type, packageId, items, travelData });
+    if (result.error) return res.status(result.error.status).json({ error: result.error.message });
+
+    const quote = await Quote.create({
+      ...baseFields, mode: 'auto', type, packageRef: result.packageRef, items: result.savedItems,
+      subtotal: result.pricing.subtotal, installation: result.pricing.installation,
+      vatAmount: result.pricing.vatAmount, total: result.pricing.total,
+      ...travelData,
+    });
+    res.status(201).json(quote);
+  } catch (err) {
+    console.error('Admin save quote error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── PUT /api/quotes/admin/:id — admin only, edit/reopen a draft ──────────────
+router.put('/admin/:id', requireAuth, async (req, res) => {
+  const {
+    clientRef, customerName, customerPhone, customerEmail,
+    site, scopeOfWork, quoteDate, validUntil, preparedBy, followUpDate,
+    mode, type, packageId, items, travel, sections,
+  } = req.body;
+
+  try {
+    const existing = await Quote.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+
+    const customer = await resolveCustomer({ clientRef, customerName, customerPhone, customerEmail });
+    if (customer.error) return res.status(customer.error.status).json({ error: customer.error.message });
+
+    const baseFields = {
+      clientRef: clientRef || undefined,
+      customerName: customer.customerName,
+      customerPhone: customer.customerPhone,
+      customerEmail: customer.customerEmail,
+      site: site || '', scopeOfWork: scopeOfWork || '',
+      quoteDate: quoteDate || existing.quoteDate, validUntil: validUntil || undefined, preparedBy: preparedBy || '',
+      followUpDate: followUpDate || undefined,
+    };
+
+    const effectiveMode = mode || existing.mode;
+
+    if (effectiveMode === 'manual') {
+      if (!Array.isArray(sections) || sections.length === 0) {
+        return res.status(400).json({ error: 'At least one section is required' });
+      }
+      const { computedSections, subtotal, vatAmount, total } = priceManual(sections);
+      const quote = await Quote.findByIdAndUpdate(req.params.id, {
+        ...baseFields, mode: 'manual', sections: computedSections,
+        subtotal, vatAmount, total, installation: 0,
+      }, { new: true, runValidators: true });
+      return res.json(quote);
+    }
+
+    let travelData = { travelKm: undefined, travelRatePerKm: undefined, travelSubtotal: 0, travelVAT: 0, travelTotal: 0 };
+    if (travel && travel.km > 0 && travel.ratePerKm > 0) {
+      const tb = calcTravel(Number(travel.km), Number(travel.ratePerKm));
+      travelData = { travelKm: tb.km, travelRatePerKm: tb.ratePerKm, travelSubtotal: tb.travelExcl, travelVAT: tb.travelVAT, travelTotal: tb.travelTotal };
+    }
+    const result = await priceAutoAdmin({ type, packageId, items, travelData });
+    if (result.error) return res.status(result.error.status).json({ error: result.error.message });
+
+    const quote = await Quote.findByIdAndUpdate(req.params.id, {
+      ...baseFields, mode: 'auto', type, packageRef: result.packageRef, items: result.savedItems,
+      subtotal: result.pricing.subtotal, installation: result.pricing.installation,
+      vatAmount: result.pricing.vatAmount, total: result.pricing.total,
+      ...travelData,
+    }, { new: true, runValidators: true });
+    res.json(quote);
+  } catch (err) {
+    console.error('Admin update quote error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── DELETE /api/quotes/:id — admin only ──────────────────────────────────────
+async function deleteHandler(req, res) {
+  try {
+    const quote = await Quote.findByIdAndDelete(req.params.id);
+    if (!quote) return res.status(404).json({ error: 'Not found' });
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+router.delete('/:id', requireAuth, deleteHandler);
+
 module.exports = router;
+module.exports.deleteHandler = deleteHandler;

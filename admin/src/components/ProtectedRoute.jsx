@@ -12,8 +12,19 @@ export default function ProtectedRoute({ children }) {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    setUser({ username: 'admin' })
-    setState('authed')
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error('Not authenticated')
+        return res.json()
+      })
+      .then(data => {
+        setUser(data.user)
+        setState('authed')
+      })
+      .catch(() => {
+        setUser(null)
+        setState('unauthed')
+      })
   }, [])
 
   async function logout() {

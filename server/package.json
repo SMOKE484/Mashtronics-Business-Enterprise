@@ -20,8 +20,11 @@
     "express": "^4.19.2",
     "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.1.0",
     "mongoose": "^9.7.1",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^9.0.3",
+    "twilio": "^6.0.2"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

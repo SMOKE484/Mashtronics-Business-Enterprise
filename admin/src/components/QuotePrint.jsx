@@ -1,4 +1,5 @@
 import logo from '../assets/logo.png'
+import { calcLineTotal } from '../utils/quoteCalc'
 import './QuotePrint.css'
 
 const fmt = n =>
@@ -12,41 +13,62 @@ const today = () => {
   return `${dd}/${mm}/${yyyy}`
 }
 
-export default function QuotePrint({ customer, scopeOfWork, breakdown, savedQuote, selectedPkg, onClose }) {
+export default function QuotePrint({ customer, scopeOfWork, breakdown, sections, totals, savedQuote, selectedPkg, onClose }) {
   const quoteNumber = savedQuote?.quoteNumber || 'DRAFT'
+  const grand = totals || breakdown?.grand
 
-  const lineItems = []
-  if (breakdown?.packageBreakdown && selectedPkg) {
-    lineItems.push({
-      description: `${selectedPkg.name}\n${selectedPkg.description || ''}`.trim(),
-      qty: 1,
-      unit: 'each',
-      unitPrice: breakdown.packageBreakdown.exclVAT,
-      total: breakdown.packageBreakdown.exclVAT,
+  let rows
+  if (sections) {
+    // Manual/sectioned mode — flatten sections into numbered rows, section titles as header rows.
+    rows = []
+    sections.forEach((sec, si) => {
+      rows.push({ isHeader: true, description: sec.title })
+      ;(sec.items || []).forEach((item, li) => {
+        rows.push({
+          itemNo: `${si + 1}.${li + 1}`,
+          description: [item.description, item.detail].filter(Boolean).join(' — '),
+          qty: item.qty,
+          unit: item.unit,
+          unitPrice: item.unitPrice,
+          disc: item.discountPct,
+          total: item.lineTotal != null ? item.lineTotal : calcLineTotal(item),
+        })
+      })
     })
+  } else {
+    // Auto/pricing-engine mode.
+    const lineItems = []
+    if (breakdown?.packageBreakdown && selectedPkg) {
+      lineItems.push({
+        description: `${selectedPkg.name}\n${selectedPkg.description || ''}`.trim(),
+        qty: 1,
+        unit: 'each',
+        unitPrice: breakdown.packageBreakdown.exclVAT,
+        total: breakdown.packageBreakdown.exclVAT,
+      })
+    }
+    if (breakdown?.itemsBreakdown) {
+      lineItems.push({
+        description: 'Custom equipment – supply and installation',
+        qty: 1,
+        unit: 'set',
+        unitPrice: breakdown.itemsBreakdown.subtotal,
+        total: breakdown.itemsBreakdown.subtotal,
+      })
+    }
+    if (breakdown?.travelBreakdown) {
+      lineItems.push({
+        description: `Travel (${breakdown.travelBreakdown.km} km @ R${breakdown.travelBreakdown.ratePerKm}/km)`,
+        qty: 1,
+        unit: 'trip',
+        unitPrice: breakdown.travelBreakdown.travelExcl,
+        total: breakdown.travelBreakdown.travelExcl,
+      })
+    }
+    const MIN_ROWS = 9
+    rows = [...lineItems]
+    while (rows.length < MIN_ROWS) rows.push(null)
   }
-  if (breakdown?.itemsBreakdown) {
-    lineItems.push({
-      description: 'Custom equipment – supply and installation',
-      qty: 1,
-      unit: 'set',
-      unitPrice: breakdown.itemsBreakdown.subtotal,
-      total: breakdown.itemsBreakdown.subtotal,
-    })
-  }
-  if (breakdown?.travelBreakdown) {
-    lineItems.push({
-      description: `Travel (${breakdown.travelBreakdown.km} km @ R${breakdown.travelBreakdown.ratePerKm}/km)`,
-      qty: 1,
-      unit: 'trip',
-      unitPrice: breakdown.travelBreakdown.travelExcl,
-      total: breakdown.travelBreakdown.travelExcl,
-    })
-  }
-
-  const MIN_ROWS = 9
-  const rows = [...lineItems]
-  while (rows.length < MIN_ROWS) rows.push(null)
 
   return (
     <div className="qp-overlay">
@@ -147,14 +169,20 @@ export default function QuotePrint({ customer, scopeOfWork, breakdown, savedQuot
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
+            {rows.map((row, i) => row?.isHeader ? (
               <tr key={i} className="qp-items-row">
-                <td className="qp-td qp-col-no">{i + 1}</td>
+                <td className="qp-td qp-col-no" />
+                <td className="qp-td qp-col-desc" colSpan={5} style={{ fontWeight: 700 }}>{row.description}</td>
+                <td className="qp-td qp-col-total" />
+              </tr>
+            ) : (
+              <tr key={i} className="qp-items-row">
+                <td className="qp-td qp-col-no">{row?.itemNo || i + 1}</td>
                 <td className="qp-td qp-col-desc" style={{ whiteSpace: 'pre-line' }}>{row?.description || ''}</td>
                 <td className="qp-td qp-col-qty">{row ? row.qty : ''}</td>
                 <td className="qp-td qp-col-unit">{row?.unit || ''}</td>
                 <td className="qp-td qp-col-price">{row ? `R  ${fmt(row.unitPrice)}` : ''}</td>
-                <td className="qp-td qp-col-disc">{row ? '0.00%' : ''}</td>
+                <td className="qp-td qp-col-disc">{row ? `${fmt(row.disc || 0)}%` : ''}</td>
                 <td className="qp-td qp-col-total">{row ? `R  ${fmt(row.total)}` : ''}</td>
               </tr>
             ))}
@@ -181,17 +209,17 @@ export default function QuotePrint({ customer, scopeOfWork, breakdown, savedQuot
             <div className="qp-totals-row">
               <span>Total</span>
               <span>R</span>
-              <span>{fmt(breakdown?.grand?.subtotal)}</span>
+              <span>{fmt(grand?.subtotal)}</span>
             </div>
             <div className="qp-totals-row">
               <span>V.A.T.</span>
               <span>R</span>
-              <span>{fmt(breakdown?.grand?.vatAmount)}</span>
+              <span>{fmt(grand?.vatAmount)}</span>
             </div>
             <div className="qp-totals-row qp-totals-grand">
               <span>Grand Total</span>
               <span>R</span>
-              <span>{fmt(breakdown?.grand?.total)}</span>
+              <span>{fmt(grand?.total)}</span>
             </div>
           </div>
         </div>

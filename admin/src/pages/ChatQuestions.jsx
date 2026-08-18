@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../components/ProtectedRoute'
-import logo from '../assets/logo.png'
 import './ChatQuestions.css'
 
 function formatDate(iso) {
@@ -10,7 +7,6 @@ function formatDate(iso) {
 }
 
 export default function ChatQuestions() {
-  const { user, logout } = useAuth()
   const [questions, setQuestions] = useState([])
   const [stats, setStats] = useState({ total: 0, uniqueCount: 0 })
   const [loading, setLoading] = useState(true)
@@ -32,27 +28,6 @@ export default function ChatQuestions() {
 
   return (
     <div className="cq-page">
-      <header className="qb-header">
-        <div className="qb-header__brand">
-          <img src={logo} alt="Mashtronics" className="qb-header__logo" />
-          ADMIN
-        </div>
-        <nav className="qb-header__nav">
-          <Link to="/" className="qb-nav-link"><i className="fas fa-file-invoice-dollar" /> Quote Builder</Link>
-          <span className="qb-nav-link qb-nav-link--active"><i className="fas fa-comments" /> Chat Questions</span>
-        </nav>
-        <div className="qb-header__right">
-          {user && <span className="qb-header__user"><i className="fas fa-user-circle" /> {user.username}</span>}
-          <button
-            className="btn btn-ghost"
-            style={{ padding: '0.4rem 0.9rem', color: 'white', borderColor: 'rgba(255,255,255,0.4)' }}
-            onClick={logout}
-          >
-            <i className="fas fa-sign-out-alt" /> Logout
-          </button>
-        </div>
-      </header>
-
       <div className="cq-body">
         <h1 className="cq-title"><i className="fas fa-chart-bar" /> Chat FAQ Analysis</h1>
 
@@ -83,8 +58,8 @@ export default function ChatQuestions() {
         )}
 
         {!loading && !error && questions.length > 0 && (
-          <div className="qb-card">
-            <div className="qb-section-title"><i className="fas fa-list-ol" /> Top Questions</div>
+          <div className="card">
+            <div className="card-title"><i className="fas fa-list-ol" /> Top Questions</div>
             <table className="cq-table">
               <thead>
                 <tr>

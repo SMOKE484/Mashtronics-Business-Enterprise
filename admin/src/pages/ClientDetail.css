@@ -1,0 +1,52 @@
+.client-detail-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.client-detail-sub { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+/* ── Camera groups (one card per NVR/device, channels nested inside) ── */
+.camera-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.camera-group-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.camera-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.camera-group-header + .camera-group-header {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bg-alt);
+}
+
+.camera-group-name { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.camera-group-meta { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.1rem; }
+.camera-group-badges { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+.camera-channel-table { margin-top: 0.85rem; }
+
+/* Inline text-button used in the live view modal's snapshot-fallback caption */
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}

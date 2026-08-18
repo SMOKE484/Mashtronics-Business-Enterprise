@@ -36,6 +36,17 @@
 
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
+
+  --success: #2e7d32;
+  --success-bg: #e8f5e9;
+  --warning: #a1660c;
+  --warning-bg: #fdf0dd;
+  --danger: #c62828;
+  --danger-bg: #fbe6e3;
+  --info: #1f5c8c;
+  --info-bg: #e6eef7;
+  --neutral: #64748b;
+  --neutral-bg: #eef1f4;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }

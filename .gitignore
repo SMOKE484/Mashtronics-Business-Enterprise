@@ -1,0 +1,22 @@
+# Secrets — never commit
+SupabasePass.txt
+*.env
+!*.env.example
+
+# Reference/vendor material — not app code, kept local only
+AI-Driveway-Guardian-Investor-Brief.md
+DAHUA_-_SEND_COMMAND_Integration_Instruction_V3.0.pdf
+Dahua_Event_Interaction-SNMP_Integration_Guide_V1.0.0_20251120.pdf
+Dahua_HTTP_API_For_DSS_V8.8_EN_1523891783962404.pdf
+DoLynk+Developer+Document/
+General_VideoPlayer_Web_Javascript_V1.3.6/
+mashtronics/
+mashtronics (1)/
+css/css.zip
+images/images.zip
+pages/pages.zip
+scripts/scripts.zip
+
+# OS
+Thumbs.db
+.DS_Store

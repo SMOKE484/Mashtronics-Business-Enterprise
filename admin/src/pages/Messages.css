@@ -1,0 +1,119 @@
+.msg-list-card { display: flex; flex-direction: column; max-height: calc(100vh - 10rem); }
+
+.msg-thread-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.msg-thread-row {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--bg-alt);
+  cursor: pointer;
+}
+
+.msg-thread-row:hover { background: var(--bg-deep); }
+.msg-thread-row--active { background: var(--primary-light); }
+
+.msg-thread-row__top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.msg-thread-row__name { font-weight: 700; color: var(--text); font-size: 0.875rem; flex: 1; }
+
+.msg-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+.msg-thread-row__preview {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.2rem;
+}
+
+.msg-thread-row__time {
+  font-size: 0.7rem;
+  color: var(--gray-light);
+  margin-top: 0.15rem;
+}
+
+.msg-thread-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 10rem);
+}
+
+.msg-thread-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.msg-bubbles {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.25rem;
+}
+
+.msg-bubble-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 80%;
+}
+
+.msg-bubble-row--admin { align-items: flex-end; align-self: flex-end; }
+
+.msg-bubble__label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  padding: 0 0.3rem 0.15rem;
+}
+
+.msg-bubble {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.msg-bubble--client { background: var(--bg-alt); color: var(--text); }
+.msg-bubble--admin { background: var(--primary); color: var(--white); }
+
+.msg-bubble__time {
+  font-size: 0.65rem;
+  color: var(--gray-light);
+  padding: 0.15rem 0.3rem 0;
+}
+
+.msg-system {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  padding: 0.35rem 0;
+}
+
+.msg-composer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.msg-composer input {
+  flex: 1;
+}

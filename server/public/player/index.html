@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Live View</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+  #player { width: 100%; height: 100%; }
+  #status {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: #cfd8e3;
+    font-family: system-ui, sans-serif; font-size: 14px; text-align: center;
+    background: #000; padding: 0 24px; gap: 12px;
+  }
+  #status.hidden { display: none; }
+  .spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.2); border-top-color: #fff;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="player"></div>
+<div id="status"><div class="spinner"></div><div id="status-text">Connecting to the live stream…</div></div>
+<script type="module">
+// Minimal Dahua plugin-free player page for the SecureWatch mobile app's
+// WebView (also loadable in a desktop browser for testing). The stream
+// session is passed either by React Native postMessage ({type:'play',
+// session:{url,deviceId,channelId,streamType}}) or, for testing, via query
+// params (?url=…&deviceId=…&channelId=…&streamType=…). Status flows back to
+// the app via window.ReactNativeWebView.postMessage: 'ready' (page loaded),
+// 'playing' (first frame), or 'error' + a human message.
+//
+// The app can also send {type:'screenshot'} (page replies with
+// {type:'screenshot-result', dataUrl}, a base64 image/jpg data URL — a raw
+// Blob can't cross postMessage) and {type:'mute', muted} (no reply; mute is
+// just setAudioVolume(0|1), there's no dedicated SDK mute call).
+import Player from '/videoPlayer/videoPlay-js.js';
+
+const statusEl = document.getElementById('status');
+const statusText = document.getElementById('status-text');
+
+const ERROR_MESSAGES = {
+  500: 'The streaming service reported an error.',
+  999: 'The stream stopped responding.',
+  503: 'The streaming service is unavailable right now.',
+  404: 'The stream address has expired or was not found.',
+  202: 'Could not connect to the streaming service.',
+  408: 'The connection to the streaming service timed out.',
+  409: 'The camera did not respond with a stream.',
+  205: 'The camera is busy.',
+  206: 'The camera disconnected.',
+  101: 'The video source reported an error.',
+  201: 'This audio format is not supported.',
+};
+
+function notifyApp(payload) {
+  if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+}
+
+let player = null;
+let started = false;
+
+const playerReady = (async () => {
+  player = new Player(['player'], {
+    playStart: () => {
+      statusEl.classList.add('hidden');
+      notifyApp({ type: 'playing' });
+    },
+    playError: (_id, msg) => {
+      const human = ERROR_MESSAGES[msg && msg.errorCode] || 'The live stream stopped unexpectedly.';
+      statusText.textContent = human;
+      statusEl.querySelector('.spinner').style.display = 'none';
+      statusEl.classList.remove('hidden');
+      try { player.close('player'); } catch (e) { /* already closed */ }
+      notifyApp({ type: 'error', message: human });
+    },
+    playFileOver: () => {},
+    captureCallback: (_id, blob) => {
+      const reader = new FileReader();
+      reader.onload = () => notifyApp({ type: 'screenshot-result', dataUrl: reader.result });
+      reader.onerror = () => notifyApp({ type: 'screenshot-result', error: 'Could not read the captured frame.' });
+      reader.readAsDataURL(blob);
+    },
+  });
+  await player.init();
+})();
+
+async function play(session) {
+  if (started) return;
+  started = true;
+  await playerReady;
+  player.play('player', {
+    streamURL: session.url,
+    deviceId: session.deviceId,
+    channelId: String(session.channelId),
+    bitStream: Number(session.streamType) || 0,
+    isLive: true,
+  });
+}
+
+function onAppMessage(event) {
+  try {
+    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    if (!data) return;
+    if (data.type === 'play' && data.session) play(data.session);
+    else if (data.type === 'screenshot' && player) player.screenshot('player');
+    else if (data.type === 'mute' && player) player.setAudioVolume('player', data.muted ? 0 : 1);
+  } catch (e) { /* non-JSON messages (devtools etc.) are ignored */ }
+}
+// RN WebView delivers messages on `document` on Android and `window` on iOS.
+window.addEventListener('message', onAppMessage);
+document.addEventListener('message', onAppMessage);
+
+const qs = new URLSearchParams(location.search);
+if (qs.get('url')) {
+  play({
+    url: qs.get('url'),
+    deviceId: qs.get('deviceId') || '',
+    channelId: qs.get('channelId') || '0',
+    streamType: qs.get('streamType') || '0',
+  });
+}
+
+playerReady.then(() => notifyApp({ type: 'ready' }));
+</script>
+</body>
+</html>

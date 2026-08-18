@@ -1,0 +1,23 @@
+.compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.compliance-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+.compliance-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.compliance-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.compliance-meta { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.5rem; }
+.compliance-note { font-size: 0.78rem; font-weight: 700; margin-top: 0.6rem; }
