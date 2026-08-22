@@ -13,22 +13,45 @@
       "backgroundColor": "#08121A"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "za.co.mashtronicsbe.securewatch",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SecureWatch uses your camera to attach photos to job reports and compliance submissions.",
+        "NSPhotoLibraryUsageDescription": "SecureWatch accesses your photo library so you can attach existing photos to job reports and compliance submissions.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "za.co.mashtronicsbe.securewatch",
       "adaptiveIcon": {
         "backgroundColor": "#08121A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font",
-      "expo-notifications"
-    ]
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "SecureWatch uses your camera to attach photos to job reports and compliance submissions.",
+          "photosPermission": "SecureWatch accesses your photo library so you can attach existing photos to job reports and compliance submissions."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b8cf2cfb-afd2-45a8-8387-fe178a73c9a6"
+      }
+    },
+    "owner": "vhulenda"
   }
 }
