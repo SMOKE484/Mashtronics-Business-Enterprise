@@ -1,7 +1,7 @@
 'use strict';
 jest.mock('../models/ResponseOfficer', () => ({ create: jest.fn(), findById: jest.fn(), findByIdAndUpdate: jest.fn(), findByIdAndDelete: jest.fn() }));
 const ResponseOfficer = require('../models/ResponseOfficer');
-const { createHandler, updateHandler, hardDeleteHandler } = require('../routes/responseOfficers');
+const { createHandler, updateHandler, hardDeleteHandler, deactivateHandler } = require('../routes/responseOfficers');
 
 function mockRes() {
   const res = {};
@@ -168,6 +168,46 @@ describe('PUT /api/response-officers/:id', () => {
     await updateHandler(req, res);
 
     expect(res.json).toHaveBeenCalledWith(updated);
+  });
+});
+
+describe('DELETE /api/response-officers/:id', () => {
+  test('deactivates and clears the SecureWatch app identity link (regression: archived-then-reclaimed sparse-index collision)', async () => {
+    const updated = { _id: 'r1', name: 'Officer One', active: false };
+    ResponseOfficer.findByIdAndUpdate.mockResolvedValue(updated);
+    const req = { params: { id: 'r1' } };
+    const res = mockRes();
+
+    await deactivateHandler(req, res);
+
+    expect(ResponseOfficer.findByIdAndUpdate).toHaveBeenCalledWith(
+      'r1',
+      { active: false, $unset: { supabaseUserId: '', appInviteCode: '', appInviteExpiresAt: '' } },
+      { new: true }
+    );
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  test('404s when the officer does not exist', async () => {
+    ResponseOfficer.findByIdAndUpdate.mockResolvedValue(null);
+    const req = { params: { id: 'missing' } };
+    const res = mockRes();
+
+    await deactivateHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Not found' });
+  });
+
+  test('never leaks a raw Mongo error message on failure', async () => {
+    ResponseOfficer.findByIdAndUpdate.mockRejectedValue(new Error('MongoServerError: something broke'));
+    const req = { params: { id: 'r1' } };
+    const res = mockRes();
+
+    await deactivateHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Server error' });
   });
 });
 

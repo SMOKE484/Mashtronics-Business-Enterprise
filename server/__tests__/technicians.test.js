@@ -5,7 +5,7 @@ jest.mock('../services/jobNotifications', () => ({ notifyBulkReassign: jest.fn()
 const Technician = require('../models/Technician');
 const Job = require('../models/Job');
 const { notifyBulkReassign } = require('../services/jobNotifications');
-const { createHandler, updateHandler, jobsCountHandler, hardDeleteHandler } = require('../routes/technicians');
+const { createHandler, updateHandler, jobsCountHandler, hardDeleteHandler, deactivateHandler } = require('../routes/technicians');
 
 function mockRes() {
   const res = {};
@@ -205,6 +205,46 @@ describe('GET /api/technicians/:id/jobs-count', () => {
 
     expect(Job.countDocuments).toHaveBeenCalledWith({ technicianRef: 't1' });
     expect(res.json).toHaveBeenCalledWith({ count: 3 });
+  });
+});
+
+describe('DELETE /api/technicians/:id', () => {
+  test('deactivates and clears the SecureWatch app identity link (regression: deactivated-then-reclaimed sparse-index collision)', async () => {
+    const updated = { _id: 't1', name: 'Vhulenda', active: false };
+    Technician.findByIdAndUpdate.mockResolvedValue(updated);
+    const req = { params: { id: 't1' } };
+    const res = mockRes();
+
+    await deactivateHandler(req, res);
+
+    expect(Technician.findByIdAndUpdate).toHaveBeenCalledWith(
+      't1',
+      { active: false, $unset: { supabaseUserId: '', appInviteCode: '', appInviteExpiresAt: '' } },
+      { new: true }
+    );
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  test('404s when the technician does not exist', async () => {
+    Technician.findByIdAndUpdate.mockResolvedValue(null);
+    const req = { params: { id: 'missing' } };
+    const res = mockRes();
+
+    await deactivateHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Not found' });
+  });
+
+  test('never leaks a raw Mongo error message on failure', async () => {
+    Technician.findByIdAndUpdate.mockRejectedValue(new Error('MongoServerError: something broke'));
+    const req = { params: { id: 't1' } };
+    const res = mockRes();
+
+    await deactivateHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Server error' });
   });
 });
 

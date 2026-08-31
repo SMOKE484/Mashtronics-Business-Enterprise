@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
       setStatus('ready');
       return 'ready';
     } catch (err) {
+      console.error('[AuthContext] resolveProfile /api/app/me failed:', err.name, err.message, err);
       if (err instanceof ApiError && err.status === 401) {
         // "No linked client account" → try staff before assuming unlinked.
         // Other 401s (bad/expired token that Supabase couldn't refresh) →

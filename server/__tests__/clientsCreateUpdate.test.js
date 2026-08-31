@@ -1,7 +1,7 @@
 'use strict';
 jest.mock('../models/Client', () => ({ create: jest.fn(), findByIdAndUpdate: jest.fn() }));
 const Client = require('../models/Client');
-const { createHandler, updateHandler } = require('../routes/clients');
+const { createHandler, updateHandler, archiveHandler } = require('../routes/clients');
 
 function mockRes() {
   const res = {};
@@ -87,5 +87,45 @@ describe('PUT /api/clients/:id', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     const [{ error }] = res.json.mock.calls[0];
     expect(error).not.toMatch(/E11000|MongoServerError/);
+  });
+});
+
+describe('DELETE /api/clients/:id', () => {
+  test('archives and clears the SecureWatch app identity link (regression: archived-then-reclaimed sparse-index collision)', async () => {
+    const updated = { _id: 'c1', name: 'Old Client', archived: true };
+    Client.findByIdAndUpdate.mockResolvedValue(updated);
+    const req = { params: { id: 'c1' } };
+    const res = mockRes();
+
+    await archiveHandler(req, res);
+
+    expect(Client.findByIdAndUpdate).toHaveBeenCalledWith(
+      'c1',
+      { archived: true, $unset: { supabaseUserId: '', appInviteCode: '', appInviteExpiresAt: '' } },
+      { new: true }
+    );
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  test('404s when the client does not exist', async () => {
+    Client.findByIdAndUpdate.mockResolvedValue(null);
+    const req = { params: { id: 'missing' } };
+    const res = mockRes();
+
+    await archiveHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Not found' });
+  });
+
+  test('never leaks a raw Mongo error message on failure', async () => {
+    Client.findByIdAndUpdate.mockRejectedValue(new Error('MongoServerError: something broke'));
+    const req = { params: { id: 'c1' } };
+    const res = mockRes();
+
+    await archiveHandler(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Server error' });
   });
 });

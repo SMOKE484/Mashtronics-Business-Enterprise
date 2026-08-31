@@ -9,15 +9,22 @@ const authRouter              = require('./routes/auth');
 const packagesRouter          = require('./routes/packages');
 const quotesRouter            = require('./routes/quotes');
 // Mounted alongside the Dahua callback work so its own admin UI (pending
-// device binds, dashboard banner) is actually testable end-to-end. The rest
-// of the SecureWatch backend (technicians, jobs, invoices, messaging, etc.)
-// stays deliberately unmounted per the 2026-07-15 hotfix — that's still a
-// separate, reviewed-commit decision, not something this change makes.
+// device binds, dashboard banner) is actually testable end-to-end.
 const dashboardRouter         = require('./routes/dashboard');
 const clientsRouter           = require('./routes/clients');
 const camerasRouter           = require('./routes/cameras');
 const dahuaCallbackRouter     = require('./routes/dahuaCallback');
 const dahuaPendingBindsRouter = require('./routes/dahuaPendingBinds');
+// SecureWatch mobile app API (routes/models/services/middleware committed
+// 2026-08-18). Left unmounted after that commit — the 2026-07-15 hotfix
+// comment predates it and no longer applies (those files are committed now).
+const appAuthRouter    = require('./routes/appAuth');
+const appMeRouter      = require('./routes/appMe');
+const appStaffMeRouter = require('./routes/appStaffMe');
+const appCamerasRouter = require('./routes/appCameras');
+const appJobsRouter    = require('./routes/appJobs');
+const appMessagesRouter = require('./routes/appMessages');
+const appPanicRouter   = require('./routes/appPanic');
 
 connectDB();
 
@@ -64,6 +71,13 @@ app.use('/api/clients',              clientsRouter);
 app.use('/api/cameras',              camerasRouter);
 app.use('/api/dahua/callback',       dahuaCallbackRouter);
 app.use('/api/dahua-pending-binds',  dahuaPendingBindsRouter);
+app.use('/api/app/auth',             appAuthRouter);
+app.use('/api/app/me',               appMeRouter);
+app.use('/api/app/staff-me',         appStaffMeRouter);
+app.use('/api/app/cameras',          appCamerasRouter);
+app.use('/api/app/jobs',             appJobsRouter);
+app.use('/api/app/messages',         appMessagesRouter);
+app.use('/api/app/panic',            appPanicRouter);
 
 app.get('/health', (_, res) => res.json({ status: 'ok' }));
 

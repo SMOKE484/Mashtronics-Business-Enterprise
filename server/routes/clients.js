@@ -64,16 +64,27 @@ async function updateHandler(req, res) {
 }
 router.put('/:id', updateHandler);
 
-// DELETE /api/clients/:id — soft delete
-router.delete('/:id', async (req, res) => {
+// DELETE /api/clients/:id — soft delete. Also clears any SecureWatch app
+// identity link (`supabaseUserId`/`appInviteCode`/`appInviteExpiresAt`) —
+// otherwise an archived client can permanently block a future client from
+// claiming the same Supabase identity via the `supabaseUserId` unique index
+// (real incident: see BUGS_AND_FIXES.md). Uses $unset, not `$set: null` —
+// the index is sparse, and a stored literal null is still indexed, so
+// setting null here would just move the collision to the next archive.
+async function archiveHandler(req, res) {
   try {
-    const client = await Client.findByIdAndUpdate(req.params.id, { archived: true }, { new: true });
+    const client = await Client.findByIdAndUpdate(
+      req.params.id,
+      { archived: true, $unset: { supabaseUserId: '', appInviteCode: '', appInviteExpiresAt: '' } },
+      { new: true }
+    );
     if (!client) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Server error' });
   }
-});
+}
+router.delete('/:id', archiveHandler);
 
 // POST /api/clients/:id/app-invite — generate a SecureWatch app invite code
 async function appInviteHandler(req, res) {
@@ -93,3 +104,4 @@ module.exports = router;
 module.exports.appInviteHandler = appInviteHandler;
 module.exports.createHandler = createHandler;
 module.exports.updateHandler = updateHandler;
+module.exports.archiveHandler = archiveHandler;

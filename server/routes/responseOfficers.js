@@ -60,16 +60,28 @@ async function updateHandler(req, res) {
 }
 router.put('/:id', updateHandler);
 
-// DELETE /api/response-officers/:id — soft delete
-router.delete('/:id', async (req, res) => {
+// DELETE /api/response-officers/:id — soft delete. Also clears any
+// SecureWatch app identity link (`supabaseUserId`/`appInviteCode`/
+// `appInviteExpiresAt`) — otherwise a deactivated officer can permanently
+// block a future officer from claiming the same Supabase identity via the
+// `supabaseUserId` unique index (same class of bug found on Client, see
+// BUGS_AND_FIXES.md). Uses $unset, not `$set: null` — the index is sparse,
+// and a stored literal null is still indexed, so setting null here would
+// just move the collision to the next deactivation.
+async function deactivateHandler(req, res) {
   try {
-    const officer = await ResponseOfficer.findByIdAndUpdate(req.params.id, { active: false }, { new: true });
+    const officer = await ResponseOfficer.findByIdAndUpdate(
+      req.params.id,
+      { active: false, $unset: { supabaseUserId: '', appInviteCode: '', appInviteExpiresAt: '' } },
+      { new: true }
+    );
     if (!officer) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Server error' });
   }
-});
+}
+router.delete('/:id', deactivateHandler);
 
 // DELETE /api/response-officers/:id/permanent — hard delete. Nothing else
 // in the schema references a response officer yet (no panic-dispatch
@@ -108,3 +120,4 @@ module.exports.appInviteHandler = appInviteHandler;
 module.exports.createHandler = createHandler;
 module.exports.updateHandler = updateHandler;
 module.exports.hardDeleteHandler = hardDeleteHandler;
+module.exports.deactivateHandler = deactivateHandler;

@@ -95,7 +95,8 @@ async function claimHandler(req, res) {
     await linkStaffAuthorization(payload.sub, String(officer._id), 'response');
 
     res.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error('[appAuth] claim failed:', err);
     res.status(500).json({ error: 'Server error' });
   }
 }

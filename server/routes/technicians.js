@@ -62,16 +62,28 @@ async function updateHandler(req, res) {
 }
 router.put('/:id', updateHandler);
 
-// DELETE /api/technicians/:id — soft delete
-router.delete('/:id', async (req, res) => {
+// DELETE /api/technicians/:id — soft delete. Also clears any SecureWatch app
+// identity link (`supabaseUserId`/`appInviteCode`/`appInviteExpiresAt`) —
+// otherwise a deactivated technician can permanently block a future
+// technician from claiming the same Supabase identity via the
+// `supabaseUserId` unique index (same class of bug found on Client, see
+// BUGS_AND_FIXES.md). Uses $unset, not `$set: null` — the index is sparse,
+// and a stored literal null is still indexed, so setting null here would
+// just move the collision to the next deactivation.
+async function deactivateHandler(req, res) {
   try {
-    const tech = await Technician.findByIdAndUpdate(req.params.id, { active: false }, { new: true });
+    const tech = await Technician.findByIdAndUpdate(
+      req.params.id,
+      { active: false, $unset: { supabaseUserId: '', appInviteCode: '', appInviteExpiresAt: '' } },
+      { new: true }
+    );
     if (!tech) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Server error' });
   }
-});
+}
+router.delete('/:id', deactivateHandler);
 
 // GET /api/technicians/:id/jobs-count — lets the admin UI know, before a
 // hard delete, whether jobs need to be reassigned or left unassigned.
@@ -150,3 +162,4 @@ module.exports.createHandler = createHandler;
 module.exports.updateHandler = updateHandler;
 module.exports.jobsCountHandler = jobsCountHandler;
 module.exports.hardDeleteHandler = hardDeleteHandler;
+module.exports.deactivateHandler = deactivateHandler;
